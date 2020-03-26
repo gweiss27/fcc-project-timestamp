@@ -24,7 +24,12 @@ app.get("/api/hello", function(req, res) {
     res.json({ greeting: "hello API" });
 });
 
-//timestamp endpoint
+//timestamp endpoint(s)
+
+app.get("/api/timestamp/", (req, res) => {
+    res.json({ unix: Date.now(), utc: Date() });
+});
+
 app.get("/api/timestamp/:date_string?", function(req, res) {
     let result = {
         unix: null,
@@ -33,17 +38,14 @@ app.get("/api/timestamp/:date_string?", function(req, res) {
     try {
         let currentDate = null;
 
-        if (req.params.date_string === undefined) {
-            currentDate = new Date();
+        if (/\d{5}/g.test(req.params.date_string)) {
+            currentDate = new Date(parseInt(req.params.date_string));
+        } else if (moment(req.params.date_string, moment.ISO_8601).isValid()) {
+            currentDate = new Date(req.params.date_string);
         } else {
-            if (moment(req.params.date_string, moment.ISO_8601).isValid()) {
-                currentDate = new Date(req.params.date_string);
-            } else if (moment.unix(parseInt(req.params.date_string))) {
-                currentDate = new Date(parseInt(req.params.date_string));
-            } else {
-                throw new Error("Invalid Date");
-            }
+            throw new Error("Invalid Date");
         }
+
         result.unix = currentDate.valueOf();
         result.utc = currentDate.toUTCString();
         res.json(result);

@@ -28,24 +28,27 @@ app.get("/api/hello", function(req, res) {
 app.get("/api/timestamp/:date_string?", function(req, res) {
     let result = {
         unix: null,
-        natural: null
+        utc: null
     };
     try {
+        let currentDate = null;
+
         if (req.params.date_string === undefined) {
-            let currentDate = moment();
-            result.unix = currentDate.unix();
-            result.natural = currentDate.toISOString();
+            currentDate = new Date();
         } else {
-            result.unix = moment(req.params.date_string).unix();
-            result.natural = moment(
-                req.params.date_string,
-                "YYYY-MM-DD"
-            ).format("MMMM Do YYYY, h:mm:ss a");
+            if (moment(req.params.date_string, moment.ISO_8601).isValid()) {
+                currentDate = new Date(req.params.date_string);
+            } else if (moment.unix(parseInt(req.params.date_string))) {
+                currentDate = new Date(parseInt(req.params.date_string));
+            } else {
+                throw new Error("Invalid Date");
+            }
         }
+        result.unix = currentDate.valueOf();
+        result.utc = currentDate.toUTCString();
         res.json(result);
     } catch (error) {
-        result.natural = "Invalid Date";
-        res.json(result);
+        res.json({ error: "Invalid Date" });
     }
 });
 

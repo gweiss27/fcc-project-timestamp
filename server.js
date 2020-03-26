@@ -28,22 +28,23 @@ app.get("/api/hello", function(req, res) {
 app.get("/api/timestamp/:date_string?", function(req, res) {
     let result = {
         unix: null,
-        utc: null
+        natural: null
     };
     try {
         if (req.params.date_string === undefined) {
             let currentDate = moment();
             result.unix = currentDate.unix();
-            result.utc = currentDate.toISOString();
+            result.natural = currentDate.toISOString();
         } else {
             result.unix = moment(req.params.date_string).unix();
-            result.utc = moment(req.params.date_string, "YYYY-MM-DD").format(
-                "MMMM Do YYYY, h:mm:ss a"
-            );
+            result.natural = moment(
+                req.params.date_string,
+                "YYYY-MM-DD"
+            ).format("MMMM Do YYYY, h:mm:ss a");
         }
         res.json(result);
     } catch (error) {
-        result.utc = "Invalid Date";
+        result.natural = "Invalid Date";
         res.json(result);
     }
 });
